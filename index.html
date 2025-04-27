@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Planificador Académico Definitivo v7</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* gray-100 */
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1.5rem; /* p-6 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* shadow-lg */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+        .task-card {
+            transition: background-color 0.2s ease-in-out;
+            border-left-width: 4px;
+            border-radius: 0.5rem;
+            background-color: white;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: start;
+            padding: 1rem; /* p-4 */
+            position: relative; /* Needed for tooltip */
+        }
+         .task-card:hover .task-details { display: block; }
+         .task-details {
+            display: none; position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%);
+            background-color: #1f2937; /* gray-800 */ color: white; padding: 6px 10px; border-radius: 4px;
+            font-size: 0.75rem; white-space: nowrap; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Colores Tareas */
+        .task-color-Resumen { border-color: #14b8a6; } /* teal-500 */
+        .task-color-Estudio { border-color: #3b82f6; } /* *** UPDATED: blue-500 *** */
+        .task-color-Practica { border-color: #f59e0b; } /* amber-500 */
+        .task-color-Actividad { border-color: #f43f5e; } /* rose-500 */
+        .task-color-Clase { border-color: #8b5cf6; } /* violet-500 */
+        .task-color-Examen { border-color: #ef4444; background-color: #fee2e2; font-weight: 600; } /* red-500, red-100 */
+        .task-color-Personal { border-color: #6b7280; } /* gray-500 */
+        .task-color-Descanso { border-color: #60a5fa; background-color: #eff6ff; } /* blue-400, blue-50 */
+
+        .task-completed { text-decoration: line-through; opacity: 0.6; background-color: #f3f4f6; }
+        .legend-item span:first-child { display: inline-block; width: 0.75rem; height: 0.75rem; margin-right: 0.5rem; border-radius: 9999px; border: 1px solid rgba(0,0,0,0.1); vertical-align: middle;}
+        .timer-button { transition: background-color 0.2s ease; }
+        .progress-bar-container { background-color: #e5e7eb; border-radius: 0.375rem; overflow: hidden; height: 1rem; /* h-4 */ border: 1px solid #d1d5db;}
+        .progress-bar-fill { height: 100%; border-radius: 0.375rem; transition: width 0.5s ease; text-align: right; padding-right: 0.5rem; color: white; font-size: 0.65rem; line-height: 1rem;}
+
+        /* Colores Barra Progreso */
+        .progress-07GIAR { background-color: #3b82f6; } /* *** UPDATED: blue-500 *** */
+        .progress-08GIAR { background-color: #8b5cf6; } /* violet-500 */
+        .progress-09GIAR { background-color: #f43f5e; } /* rose-500 */
+        .progress-10GIAR { background-color: #14b8a6; } /* teal-500 */
+        .progress-01GIAR { background-color: #f59e0b; } /* amber-500 */
+
+        /* Ocultar detalles en tareas no académicas */
+        .task-color-Examen .task-details,
+        .task-color-Descanso .task-details,
+        .task-color-Personal .task-details { display: none !important; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800">
+                <i class="fas fa-calendar-alt mr-2 text-indigo-600"></i>Mi Planificador Académico
+            </h1>
+            <p id="motivationalQuote" class="text-gray-500 mt-2 italic">"Cargando inspiración..."</p>
+        </header>
+
+        <div class="card flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+            <h2 class="text-xl font-semibold text-gray-700">Plan del día:</h2>
+            <div class="flex items-center space-x-2">
+                <button id="prevDayBtn" title="Día anterior" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-700 transition shadow-sm"><i class="fas fa-chevron-left fa-fw"></i></button>
+                <input type="date" id="currentDateInput" class="input-field w-auto text-center font-medium !mt-0 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md px-3 py-1.5">
+                <button id="nextDayBtn" title="Día siguiente" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-700 transition shadow-sm"><i class="fas fa-chevron-right fa-fw"></i></button>
+                <button id="todayBtn" title="Ir a hoy" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 rounded-md text-white text-sm transition shadow-sm">Hoy</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <div class="lg:col-span-2">
+                <div class="card">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-5 border-b border-gray-200 pb-3">Tareas para <span id="selectedDateDisplay" class="font-bold text-indigo-600"></span></h3>
+                    <div id="dailyTasksList" class="space-y-2">
+                        <p class="text-gray-500 italic">Cargando plan...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1">
+                <div class="sticky top-6 space-y-6">
+
+                    <div class="card">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2 flex items-center"><i class="fas fa-stopwatch mr-2 text-indigo-500"></i>Temporizador Pomodoro</h3>
+                        <div id="timerDisplay" class="text-6xl font-bold text-center my-4 text-gray-700">50:00</div>
+                        <div class="flex justify-center space-x-3 mb-2">
+                            <button id="startWorkBtn" class="timer-button flex-1 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md shadow-sm text-sm"><i class="fas fa-play mr-1"></i> Estudio (50m)</button>
+                            <button id="startBreakBtn" class="timer-button flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm text-sm"><i class="fas fa-coffee mr-1"></i> Descanso (10m)</button>
+                        </div>
+                         <div class="flex justify-center space-x-3">
+                             <button id="pauseTimerBtn" class="timer-button flex-1 bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md shadow-sm text-sm"><i class="fas fa-pause mr-1"></i> Pausa</button>
+                             <button id="resetTimerBtn" class="timer-button flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow-sm text-sm"><i class="fas fa-stop mr-1"></i> Reset</button>
+                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                         <div class="card p-4">
+                            <h3 class="text-md font-semibold text-gray-800 mb-3 border-b pb-2 flex items-center"><i class="fas fa-palette mr-2 text-indigo-500"></i>Leyenda</h3>
+                            <div id="colorLegend" class="space-y-1.5 text-xs">
+                                </div>
+                        </div>
+
+                        <div class="card p-4">
+                            <h3 class="text-md font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center"><i class="fas fa-lightbulb mr-2 text-amber-500"></i>Técnicas</h3>
+                            <div class="space-y-2 text-xs">
+                                <div class="p-2 rounded bg-gray-100 border-l-4 border-gray-400">
+                                    <h4 class="font-semibold text-gray-700"><i class="fas fa-stopwatch mr-1 text-blue-500"></i>Pomodoro</h4>
+                                    <p class="text-gray-600">50min foco / 10min descanso.</p>
+                                </div>
+                                <div class="p-2 rounded bg-gray-100 border-l-4 border-gray-400">
+                                    <h4 class="font-semibold text-gray-700"><i class="fas fa-brain mr-1 text-green-500"></i>Active Recall</h4>
+                                    <p class="text-gray-600">Recuerda/explica sin mirar.</p>
+                                </div>
+                                 <div class="p-2 rounded bg-gray-100 border-l-4 border-gray-400">
+                                    <h4 class="font-semibold text-gray-700"><i class="fas fa-chalkboard-teacher mr-1 text-amber-500"></i>Feynman</h4>
+                                    <p class="text-gray-600">Explica simple, detecta fallos.</p>
+                                </div>
+                                 <div class="p-2 rounded bg-gray-100 border-l-4 border-gray-400">
+                                    <h4 class="font-semibold text-gray-700"><i class="fas fa-pencil-ruler mr-1 text-red-500"></i>Práctica D.</h4>
+                                    <p class="text-gray-600">Resuelve ejercicios, analiza.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+         <div class="mt-12 pt-8 border-t border-gray-300">
+            <h2 class="text-2xl font-semibold text-center text-gray-800 mb-8">
+                <i class="fas fa-chart-pie mr-2 text-indigo-600"></i>Seguimiento de Progreso General
+            </h2>
+            <div id="progressTrackingSection" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                 <p class="text-gray-500 italic md:col-span-2 lg:col-span-3 xl:col-span-5 text-center">Calculando progreso...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATOS DEL PLAN ESTRATÉGICO (Revisado para cumplir horas v6) ---
+        const studyPlan = [
+            // Fase 1: 28.04 - 05.05
+            { date: '2025-04-28', startTime: '09:00', endTime: '10:50', taskType: 'Resumen', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Tema 4', technique: 'Pomodoro, Feynman' }, // 2h R
+            { date: '2025-04-28', startTime: '11:00', endTime: '12:50', taskType: 'Resumen', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Tema 1', technique: 'Pomodoro, Feynman' }, // 2h R
+            { date: '2025-04-28', startTime: '14:00', endTime: '15:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica Inicial', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-04-28', startTime: '16:00', endTime: '16:50', taskType: 'Resumen', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Tema 1 Inicio', technique: 'Pomodoro, Feynman' }, // 1h R
+            { date: '2025-04-28', startTime: '17:30', endTime: '18:20', taskType: 'Personal', subjectCode: 'PLAN', subjectName: 'Organización Semanal', details: '', technique: '' },
+            { date: '2025-04-28', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-04-28', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 8h
+            { date: '2025-04-29', startTime: '09:00', endTime: '11:50', taskType: 'Resumen', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Tema 2', technique: 'Pomodoro, Feynman' }, // 3h R
+            { date: '2025-04-29', startTime: '12:00', endTime: '12:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
+            { date: '2025-04-29', startTime: '14:00', endTime: '16:50', taskType: 'Resumen', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Tema 1 Fin + Tema 2 Inicio', technique: 'Pomodoro, Feynman' }, // 3h R
+            { date: '2025-04-29', startTime: '17:30', endTime: '19:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-04-29', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 9h
+            { date: '2025-04-30', startTime: '09:00', endTime: '10:50', taskType: 'Resumen', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Tema 3', technique: 'Pomodoro, Feynman' }, // 2h R (Total 08GIAR R: 5h OK)
+            { date: '2025-04-30', startTime: '11:00', endTime: '12:50', taskType: 'Resumen', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Todos (Inicio)', technique: 'Pomodoro, Feynman' }, // 2h R
+            { date: '2025-04-30', startTime: '14:00', endTime: '14:50', taskType: 'Resumen', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Tema 2 Fin', technique: 'Pomodoro, Feynman' }, // 1h R (Total 09GIAR R: 3h OK)
+            { date: '2025-04-30', startTime: '15:00', endTime: '16:50', taskType: 'Resumen', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Todos (Continuación)', technique: 'Pomodoro, Feynman' }, // 2h R
+            { date: '2025-04-30', startTime: '17:30', endTime: '18:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
+            { date: '2025-04-30', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-04-30', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 8h
+            { date: '2025-05-01', startTime: '09:00', endTime: '11:50', taskType: 'Resumen', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Todos (Continuación)', technique: 'Pomodoro, Feynman' }, // 3h R
+            { date: '2025-05-01', startTime: '12:00', endTime: '12:50', taskType: 'Estudio', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Repaso Activo Tema 4', technique: 'Active Recall' }, // 1h E
+            { date: '2025-05-01', startTime: '14:00', endTime: '16:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 3h P
+            { date: '2025-05-01', startTime: '17:30', endTime: '18:20', taskType: 'Estudio', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Repaso Activo Temas 1-3', technique: 'Active Recall' }, // 1h E
+            { date: '2025-05-01', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 8h
+            { date: '2025-05-02', startTime: '09:00', endTime: '11:50', taskType: 'Resumen', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Todos (Finalización)', technique: 'Pomodoro, Feynman' }, // 3h R (Total 10GIAR R: 10h OK)
+            { date: '2025-05-02', startTime: '12:00', endTime: '12:50', taskType: 'Estudio', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Repaso Activo Temas 1-2', technique: 'Active Recall' }, // 1h E
+            { date: '2025-05-02', startTime: '14:00', endTime: '15:50', taskType: 'Estudio', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 2h E
+            { date: '2025-05-02', startTime: '16:00', endTime: '17:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-05-02', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-05-02', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 8h
+            { date: '2025-05-03', startTime: '09:00', endTime: '10:50', taskType: 'Clase', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Clase Pendiente 2', technique: 'Toma de apuntes activa' }, // 2h C
+            { date: '2025-05-03', startTime: '11:00', endTime: '12:50', taskType: 'Clase', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Clase Pendiente 1', technique: 'Toma de apuntes activa' }, // 2h C
+            { date: '2025-05-03', startTime: '14:00', endTime: '16:50', taskType: 'Estudio', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 3h E
+            { date: '2025-05-03', startTime: '17:30', endTime: '19:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-05-03', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 9h
+            { date: '2025-05-04', startTime: '09:00', endTime: '11:50', taskType: 'Actividad', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Actividad 3', technique: 'Pomodoro' }, // 3h A
+            { date: '2025-05-04', startTime: '12:00', endTime: '13:30', taskType: 'Clase', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Clase Pendiente 3', technique: 'Toma de apuntes activa' }, // 1.5h C
+            { date: '2025-05-04', startTime: '14:30', endTime: '16:00', taskType: 'Clase', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Clase Pendiente 2', technique: 'Toma de apuntes activa' }, // 1.5h C
+            { date: '2025-05-04', startTime: '16:15', endTime: '18:15', taskType: 'Estudio', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 2h E
+            { date: '2025-05-04', startTime: '18:30', endTime: '19:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
+            { date: '2025-05-04', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 9h
+            { date: '2025-05-05', startTime: '09:00', endTime: '11:50', taskType: 'Estudio', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 3h E
+            { date: '2025-05-05', startTime: '12:00', endTime: '12:50', taskType: 'Estudio', subjectCode: 'GIAR', subjectName: 'Repaso General Resúmenes', details: 'Todos', technique: 'Active Recall' }, // 1h E
+            { date: '2025-05-05', startTime: '14:00', endTime: '16:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Enfoque áreas débiles', technique: 'Pomodoro, Práctica Deliberada' }, // 3h P
+            { date: '2025-05-05', startTime: '17:30', endTime: '18:20', taskType: 'Personal', subjectCode: 'PLAN', subjectName: 'Preparar Descanso', details: 'Organizar post-descanso', technique: '' }, // 1h
+            { date: '2025-05-05', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-05-05', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 8h
+
+            // Fase 2: 06.05 - 10.05 - DESCANSO
+
+            // Fase 3: 11.05 (4 clases restantes)
+            { date: '2025-05-11', startTime: '09:30', endTime: '11:00', taskType: 'Clase', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Clase Pendiente 1', technique: 'Toma de apuntes activa' }, // 1.5h C
+            { date: '2025-05-11', startTime: '11:15', endTime: '12:45', taskType: 'Clase', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Clase Pendiente 2', technique: 'Toma de apuntes activa' }, // 1.5h C (Total 07GIAR C: 3h OK)
+            { date: '2025-05-11', startTime: '14:30', endTime: '16:00', taskType: 'Clase', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Clase Pendiente 1', technique: 'Toma de apuntes activa' }, // 1.5h C (Total 08GIAR C: 1.5h OK)
+            { date: '2025-05-11', startTime: '16:15', endTime: '17:45', taskType: 'Clase', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Clase Pendiente 1', technique: 'Toma de apuntes activa' }, // 1.5h C (Total 09GIAR C: 4.5h OK)
+            { date: '2025-05-11', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 6h
+
+            // Fase 4: 12.05 - 01.06 (Ajustada para cumplir horas)
+            // Horas base (R+C): 07(5h), 08(6.5h), 09(7.5h), 10(13h)
+            // Horas objetivo (E+P+R+C): 07(25h), 08(26.5h), 09(29.5h), 10(31.5h), 01(30h P)
+            // Horas a añadir (E+P): 07(20h), 08(20h), 09(22h), 10(18.5h), 01(30h P)
+            { date: '2025-05-12', startTime: '17:30', endTime: '19:20', taskType: 'Estudio', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Estudio Profundo', technique: 'Pomodoro, Active Recall' }, // 2h E
+            { date: '2025-05-12', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-05-12', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-13', startTime: '17:30', endTime: '19:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-05-13', startTime: '19:30', endTime: '20:20', taskType: 'Estudio', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Estudio Profundo', technique: 'Pomodoro, Active Recall'}, // 1h E
+            { date: '2025-05-13', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-14', startTime: '17:30', endTime: '20:20', taskType: 'Actividad', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Actividad 3 (Bloque Entero)', technique: 'Pomodoro' }, // 3h A
+            { date: '2025-05-14', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-05-14', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-15', startTime: '17:30', endTime: '19:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-05-15', startTime: '19:30', endTime: '20:20', taskType: 'Estudio', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Estudio Profundo', technique: 'Pomodoro, Active Recall'}, // 1h E
+            { date: '2025-05-15', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-16', startTime: '17:30', endTime: '19:20', taskType: 'Estudio', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Estudio Profundo', technique: 'Pomodoro, Active Recall' }, // 2h E
+            { date: '2025-05-16', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-05-16', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            // FIN DE SEMANA 17-18 Mayo (Ajustado)
+            { date: '2025-05-17', startTime: '09:00', endTime: '11:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica Intensiva', technique: 'Pomodoro, Práctica Deliberada' }, // 3h P
+            { date: '2025-05-17', startTime: '12:00', endTime: '13:50', taskType: 'Estudio', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Estudio/Repaso', technique: 'Active Recall' }, // 2h E
+            { date: '2025-05-17', startTime: '15:00', endTime: '17:50', taskType: 'Estudio', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Estudio Profundo', technique: 'Pomodoro, Active Recall' }, // 3h E
+            { date: '2025-05-17', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 8h
+            { date: '2025-05-18', startTime: '09:00', endTime: '11:50', taskType: 'Estudio', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Estudio Profundo', technique: 'Pomodoro, Active Recall' }, // 3h E
+            { date: '2025-05-18', startTime: '12:00', endTime: '13:50', taskType: 'Estudio', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Estudio Profundo', technique: 'Pomodoro, Active Recall' }, // 2h E
+            { date: '2025-05-18', startTime: '15:00', endTime: '17:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 3h P
+            { date: '2025-05-18', startTime: '18:00', endTime: '18:50', taskType: 'Personal', subjectCode: 'PLAN', subjectName: 'Planificación Semana Exámenes', details: 'Ajustar plan', technique: '' }, // 1h
+            { date: '2025-05-18', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 9h
+
+            // Semana 19.05 - 25.05 (Exámenes 07GIAR y 08GIAR)
+            { date: '2025-05-19', startTime: '17:30', endTime: '19:20', taskType: 'Estudio', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Repaso Intensivo Pre-Examen', technique: 'Active Recall, Práctica' }, // 2h E
+            { date: '2025-05-19', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-05-19', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-20', startTime: '17:30', endTime: '19:20', taskType: 'Estudio', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Repaso Final Pre-Examen', technique: 'Active Recall, Preguntas' }, // 2h E
+            { date: '2025-05-20', startTime: '19:30', endTime: '20:20', taskType: 'Descanso', subjectCode: 'MENTAL', subjectName: 'Descanso Pre-Examen', details: '', technique: '' }, // 1h
+            { date: '2025-05-20', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-21', startTime: '00:00', endTime: '23:59', taskType: 'Examen', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'EXAMEN', technique: '' },
+            { date: '2025-05-21', startTime: '18:30', endTime: '19:20', taskType: 'Estudio', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Repaso Ligero Post-Examen', technique: 'Active Recall' }, // 1h E
+            { date: '2025-05-21', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-05-21', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-22', startTime: '17:30', endTime: '20:20', taskType: 'Estudio', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Repaso Intensivo Pre-Examen', technique: 'Active Recall, Práctica' }, // 3h E
+            { date: '2025-05-22', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-23', startTime: '00:00', endTime: '23:59', taskType: 'Examen', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'EXAMEN', technique: '' },
+            { date: '2025-05-23', startTime: '17:30', endTime: '19:20', taskType: 'Descanso', subjectCode: 'POSTEXAM', subjectName: 'Descanso Post-Examen', details: '', technique: '' }, // 2h
+            { date: '2025-05-23', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-05-23', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+
+             // Semana 26.05 - 01.06
+            { date: '2025-05-26', startTime: '17:30', endTime: '19:20', taskType: 'Estudio', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Repaso Intensivo Pre-Examen', technique: 'Active Recall, Práctica' }, // 2h E
+            { date: '2025-05-26', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-05-26', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-27', startTime: '00:00', endTime: '23:59', taskType: 'Examen', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'EXAMEN', technique: '' },
+            { date: '2025-05-27', startTime: '17:30', endTime: '18:20', taskType: 'Descanso', subjectCode: 'POSTEXAM', subjectName: 'Descanso Post-Examen', details: '', technique: '' }, // 1h
+            { date: '2025-05-27', startTime: '18:30', endTime: '19:20', taskType: 'Estudio', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Repaso Ligero', technique: 'Active Recall' }, // 1h E
+            { date: '2025-05-27', startTime: '19:30', endTime: '20:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
+            { date: '2025-05-27', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-28', startTime: '17:30', endTime: '19:20', taskType: 'Estudio', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Repaso Intensivo Pre-Examen', technique: 'Active Recall, Práctica' }, // 2h E
+            { date: '2025-05-28', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-05-28', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-29', startTime: '00:00', endTime: '23:59', taskType: 'Examen', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'EXAMEN', technique: '' },
+            { date: '2025-05-29', startTime: '17:30', endTime: '18:20', taskType: 'Descanso', subjectCode: 'POSTEXAM', subjectName: 'Descanso Post-Examen', details: '', technique: '' }, // 1h
+            { date: '2025-05-29', startTime: '18:30', endTime: '20:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Repaso Ligero', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-05-29', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-30', startTime: '17:30', endTime: '20:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Repaso Intensivo', technique: 'Pomodoro, Práctica Deliberada' }, // 3h P
+            { date: '2025-05-30', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
+            { date: '2025-05-30', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-05-31', startTime: '09:00', endTime: '12:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Repaso Intensivo / Simulacro Examen', technique: 'Pomodoro, Práctica Deliberada' }, // 4h P
+            { date: '2025-05-31', startTime: '14:30', endTime: '17:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Repaso Áreas Débiles', technique: 'Pomodoro, Práctica Deliberada' }, // 3h P
+            { date: '2025-05-31', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 7h
+            { date: '2025-06-01', startTime: '10:00', endTime: '12:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Repaso Final', technique: 'Active Recall, Práctica Ligera' }, // 3h P
+            { date: '2025-06-01', startTime: '13:00', endTime: '21:30', taskType: 'Descanso', subjectCode: 'MENTAL', subjectName: 'Descanso Pre-Examen Final', details: '', technique: '' },
+            { date: '2025-06-01', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' },
+            { date: '2025-06-02', startTime: '00:00', endTime: '23:59', taskType: 'Examen', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'EXAMEN FINAL', technique: '' },
+
+        ].map((task, index) => ({ ...task, id: `task-${index}-${Date.now()}-${Math.random()}` }));
+
+        // --- Estado de la Aplicación ---
+        let currentDate = new Date();
+        let completedTasks = JSON.parse(localStorage.getItem('completedTasks_v4')) || {}; // v4 por nuevo diseño
+        let timerInterval = null;
+        let timerSeconds = 50 * 60;
+        let isTimerRunning = false;
+        let isWorkMode = true;
+        let audioContext = null;
+
+        // --- Elementos del DOM ---
+        const currentDateInput = document.getElementById('currentDateInput');
+        const selectedDateDisplay = document.getElementById('selectedDateDisplay');
+        const dailyTasksList = document.getElementById('dailyTasksList');
+        const prevDayBtn = document.getElementById('prevDayBtn');
+        const nextDayBtn = document.getElementById('nextDayBtn');
+        const todayBtn = document.getElementById('todayBtn');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const startWorkBtn = document.getElementById('startWorkBtn');
+        const startBreakBtn = document.getElementById('startBreakBtn');
+        const pauseTimerBtn = document.getElementById('pauseTimerBtn');
+        const resetTimerBtn = document.getElementById('resetTimerBtn');
+        const motivationalQuoteEl = document.getElementById('motivationalQuote');
+        const colorLegendEl = document.getElementById('colorLegend');
+        const progressTrackingSection = document.getElementById('progressTrackingSection');
+
+        // --- Funciones ---
+        const formatDateISO = (date) => date.toISOString().split('T')[0];
+        const saveCompletedTasks = () => { localStorage.setItem('completedTasks_v4', JSON.stringify(completedTasks)); };
+
+        // Función genérica para doble confirmación
+        const confirmDeletion = (message) => {
+            const firstConfirm = confirm(message);
+            if (firstConfirm) {
+                return confirm("¿Estás realmente seguro? Esta acción no se puede deshacer.");
+            }
+            return false;
+        };
+
+        const toggleTaskCompletion = (taskId) => {
+            const taskToToggle = studyPlan.find(task => task.id === taskId);
+            let proceed = true;
+
+            if (completedTasks[taskId] && taskToToggle) {
+                proceed = confirm(`¿Seguro que quieres desmarcar la tarea "${taskToToggle.subjectName} (${taskToToggle.taskType})"? Perderás el progreso registrado.`);
+            }
+
+            if (proceed) {
+                completedTasks[taskId] = !completedTasks[taskId];
+                saveCompletedTasks();
+                renderDailyTasks(currentDate);
+                renderProgressTracking();
+            } else {
+                 const checkbox = document.querySelector(`.task-card[data-task-id="${taskId}"] input[type="checkbox"]`);
+                 if (checkbox) checkbox.checked = true;
+            }
+        };
+
+
+        // --- Lógica del Temporizador (con sonido) ---
+        const playAlarmSound = () => {
+            if (!audioContext) { try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error("Web Audio API no soportada", e); return; } }
+            if (audioContext.state === 'suspended') { audioContext.resume(); }
+            if (audioContext.state === 'running') {
+                const oscillator = audioContext.createOscillator(); const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode); gainNode.connect(audioContext.destination);
+                oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(880, audioContext.currentTime); gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                oscillator.start(audioContext.currentTime); oscillator.stop(audioContext.currentTime + 0.4);
+            } else { console.warn("AudioContext no activo. Click para habilitar sonido."); }
+        };
+        const updateTimerDisplay = () => { const minutes = Math.floor(timerSeconds / 60); const seconds = timerSeconds % 60; timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`; };
+        const stopTimer = () => { clearInterval(timerInterval); isTimerRunning = false; timerInterval = null; updateTimerDisplay(); };
+        const startTimer = (durationMinutes, workMode) => {
+            if (!audioContext) { try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+            if (audioContext && audioContext.state === 'suspended') { audioContext.resume(); }
+            stopTimer(); timerSeconds = durationMinutes * 60; isWorkMode = workMode; updateTimerDisplay(); isTimerRunning = true;
+            timerInterval = setInterval(() => {
+                timerSeconds--; updateTimerDisplay();
+                if (timerSeconds <= 0) {
+                    stopTimer(); playAlarmSound();
+                    alert(isWorkMode ? "¡Tiempo! Hora de un descanso de 10 minutos." : "¡Descanso terminado! ¿Listo para otro bloque?");
+                    timerSeconds = 50 * 60; isWorkMode = true; updateTimerDisplay();
+                }
+            }, 1000);
+        };
+        const pauseTimer = () => {
+            if (isTimerRunning) { clearInterval(timerInterval); isTimerRunning = false; timerInterval = null; }
+            else if (timerInterval === null && timerSeconds > 0) {
+                 isTimerRunning = true;
+                 timerInterval = setInterval(() => {
+                    timerSeconds--; updateTimerDisplay();
+                    if (timerSeconds <= 0) {
+                        stopTimer(); playAlarmSound();
+                        alert(isWorkMode ? "¡Tiempo! Hora de un descanso de 10 minutos." : "¡Descanso terminado! ¿Listo para otro bloque?");
+                         timerSeconds = 50 * 60; isWorkMode = true; updateTimerDisplay();
+                    }
+                }, 1000);
+            }
+        };
+        const resetTimer = () => { stopTimer(); timerSeconds = 50 * 60; isWorkMode = true; updateTimerDisplay(); };
+        startWorkBtn.onclick = () => startTimer(50, true);
+        startBreakBtn.onclick = () => startTimer(10, false);
+        pauseTimerBtn.onclick = pauseTimer;
+        resetTimerBtn.onclick = resetTimer;
+
+
+        // Renderizar tareas para una fecha dada (Visualización Mejorada)
+        const renderDailyTasks = (date) => {
+            const dateStr = formatDateISO(date);
+            currentDateInput.value = dateStr;
+            selectedDateDisplay.textContent = date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+
+            const tasksForDay = studyPlan
+                .filter(task => task.date === dateStr)
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            dailyTasksList.innerHTML = '';
+
+            if (tasksForDay.length === 0) {
+                dailyTasksList.innerHTML = '<p class="text-gray-500 italic text-center py-6">¡Día libre! Disfruta o adelanta si lo necesitas.</p>';
+                return;
+            }
+
+            tasksForDay.forEach(task => {
+                const isCompleted = completedTasks[task.id] || false;
+                const card = document.createElement('div');
+                card.className = `task-card relative flex items-start p-4 rounded-lg border-l-4 task-color-${task.taskType} ${isCompleted ? 'task-completed' : ''} cursor-default`;
+                card.dataset.taskId = task.id;
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = isCompleted;
+                checkbox.className = 'form-checkbox h-5 w-5 text-indigo-600 rounded mr-3 mt-1 flex-shrink-0 cursor-pointer'; // Color checkbox
+                checkbox.onchange = (e) => { e.stopPropagation(); toggleTaskCompletion(task.id); };
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'flex-1';
+
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'block text-xs font-medium text-gray-500 mb-0.5';
+                if (task.taskType === 'Examen' || task.subjectCode === 'MENTAL' || task.subjectCode === 'POSTEXAM') {
+                     timeSpan.textContent = ` `; timeSpan.style.height = '1rem';
+                } else {
+                    timeSpan.textContent = `${task.startTime} - ${task.endTime}`;
+                }
+
+                const title = document.createElement('h4');
+                title.className = 'font-semibold text-gray-800 leading-tight';
+                 if (task.taskType === 'Personal' || task.taskType === 'Descanso' || task.taskType === 'Examen') {
+                     title.textContent = task.subjectName;
+                 } else {
+                    title.textContent = `${task.subjectName} (${task.taskType})`;
+                 }
+
+
+                const details = document.createElement('p');
+                details.className = 'text-sm text-gray-600 mt-1';
+                 if (task.details && task.taskType !== 'Examen' && task.taskType !== 'Descanso' && task.taskType !== 'Personal') {
+                     details.textContent = task.details;
+                     contentDiv.appendChild(details);
+                 }
+
+                contentDiv.appendChild(timeSpan);
+                contentDiv.appendChild(title);
+
+                 if (task.technique && !['Personal', 'Descanso', 'Examen'].includes(task.taskType)) {
+                     const tooltip = document.createElement('div');
+                     tooltip.className = 'task-details';
+                     let tooltipContent = '';
+                     if(task.subjectCode && !['PLAN', 'GIMNASIO', 'FAMILIA', 'MENTAL', 'POSTEXAM'].includes(task.subjectCode)) {
+                         tooltipContent += `Asig: ${task.subjectCode}<br>`;
+                     }
+                     tooltipContent += `Técnica: ${task.technique}`;
+                     tooltip.innerHTML = tooltipContent.trim().replace('<br>','');
+                     if (tooltip.innerHTML) { card.appendChild(tooltip); }
+                 }
+
+                card.insertBefore(checkbox, card.firstChild);
+                card.appendChild(contentDiv);
+                dailyTasksList.appendChild(card);
+            });
+        };
+
+        // Cambiar fecha
+        const changeDate = (days) => {
+            currentDate.setUTCDate(currentDate.getUTCDate() + days);
+            renderDailyTasks(currentDate);
+        };
+
+        // --- Funciones para Seguimiento de Progreso (CORREGIDO) ---
+        const calculateTaskDuration = (startTime, endTime) => {
+            if (startTime === '00:00' && endTime === '23:59') return 0; // Exámenes no cuentan
+            try {
+                const start = startTime.split(':').map(Number);
+                const end = endTime.split(':').map(Number);
+                const startMinutes = start[0] * 60 + start[1];
+                const endMinutes = end[0] * 60 + end[1];
+                if (endMinutes < startMinutes) return 0; // Evitar duraciones negativas
+                return (endMinutes - startMinutes) / 60; // Duración en horas
+            } catch (e) { console.error("Error calculando duración:", startTime, endTime, e); return 0; }
+        };
+
+        const calculateProgress = () => {
+            const progress = {};
+            // CORRECCIÓN: Tipos de tarea que cuentan para horas
+            const studyTaskTypesGiar = ['Estudio', 'Practica', 'Resumen', 'Clase']; // Incluye Resumen y Clase para GIAR
+            const studyTaskTypesCalc = ['Practica']; // Solo práctica para Cálculo
+            // CORRECCIÓN: Nuevos objetivos de horas
+            const relevantSubjects = {
+                '07GIAR': { name: 'Introducción ciencia de datos', targetHours: 25, totalActivities: 1 }, // 22h E/P/R + 3h C
+                '08GIAR': { name: 'Algoritmos y estructuras de datos', targetHours: 26.5, totalActivities: 0 }, // 25h E/P/R + 1.5h C
+                '09GIAR': { name: 'Introducción IA', targetHours: 29.5, totalActivities: 1 }, // 25h E/P/R + 4.5h C
+                '10GIAR': { name: 'Arquitectura de computadores', targetHours: 31.5, totalActivities: 1 }, // 28.5h E/P/R + 3h C (Asumiendo 1 actividad futura)
+                '01GIAR': { name: 'Cálculo (Recuperación)', targetHours: 30, totalActivities: 0 }
+            };
+
+             Object.keys(relevantSubjects).forEach(code => {
+                 progress[code] = {
+                     name: relevantSubjects[code].name,
+                     targetHours: relevantSubjects[code].targetHours,
+                     completedHours: 0,
+                     totalActivities: relevantSubjects[code].totalActivities,
+                     completedActivities: 0
+                 };
+             });
+
+            studyPlan.forEach(task => {
+                if (progress[task.subjectCode]) {
+                    // Determinar qué tipos de tarea cuentan para esta asignatura
+                    const applicableStudyTypes = task.subjectCode === '01GIAR' ? studyTaskTypesCalc : studyTaskTypesGiar;
+
+                    // Contar horas completadas de tipos aplicables
+                    if (applicableStudyTypes.includes(task.taskType) && completedTasks[task.id]) {
+                        const duration = calculateTaskDuration(task.startTime, task.endTime);
+                        progress[task.subjectCode].completedHours += duration;
+                    }
+                    // Contar actividades completadas
+                    if (task.taskType === 'Actividad' && completedTasks[task.id]) {
+                        progress[task.subjectCode].completedActivities += 1;
+                    }
+                }
+            });
+
+            return progress;
+        };
+
+        const renderProgressTracking = () => {
+            const progressData = calculateProgress();
+            progressTrackingSection.innerHTML = '';
+
+            for (const subjectCode in progressData) {
+                const subjectProgress = progressData[subjectCode];
+                const displayCompletedHours = Math.min(subjectProgress.completedHours, subjectProgress.targetHours);
+                const progressPercent = subjectProgress.targetHours > 0 ? (displayCompletedHours / subjectProgress.targetHours) * 100 : 0;
+
+                const card = document.createElement('div');
+                // Usar un color fijo o basado en el código para el borde superior
+                const taskTypeForColor = subjectCode === '01GIAR' ? 'Practica' : 'Estudio'; // Tipo base para color
+                const colorInfo = colorMapping[taskTypeForColor];
+                const borderColor = colorInfo ? colorInfo.color : '#6b7280'; // Default gris
+
+                card.className = `bg-white p-4 rounded-lg shadow-md border-t-4`;
+                card.style.borderTopColor = borderColor;
+
+                let activityHTML = '';
+                 // CORRECCIÓN: Mostrar contador solo si hay actividades totales definidas Y NO es 07, 09, 10
+                 if (subjectProgress.totalActivities > 0 && !['07GIAR', '09GIAR', '10GIAR'].includes(subjectCode)) {
+                     activityHTML = `
+                    <div class="text-xs text-gray-600 text-center border-t pt-2 mt-3">
+                        <span>Actividades Completadas:</span>
+                        <span class="font-medium text-base ml-1">${subjectProgress.completedActivities} / ${subjectProgress.totalActivities}</span>
+                    </div>
+                    `;
+                }
+
+
+                card.innerHTML = `
+                    <h4 class="font-semibold text-gray-700 mb-3 text-center text-sm">${subjectProgress.name} <span class="text-xs text-gray-500">(${subjectCode})</span></h4>
+                    <div class="mb-3">
+                        <div class="flex justify-between text-xs text-gray-600 mb-1">
+                            <span>Horas Dedicadas:</span>
+                            <span class="font-medium">${subjectProgress.completedHours.toFixed(1)}h / ${subjectProgress.targetHours.toFixed(1)}h</span>
+                        </div>
+                        <div class="progress-bar-container">
+                           <div class="progress-bar-fill progress-${subjectCode}" style="width: ${progressPercent}%">${progressPercent.toFixed(0)}%</div>
+                        </div>
+                    </div>
+                    ${activityHTML}
+                `;
+                progressTrackingSection.appendChild(card);
+            }
+        };
+
+
+        // --- Funciones Adicionales ---
+        const getRandomQuote = () => {
+             const quotes = [
+                "El éxito es la suma de pequeños esfuerzos repetidos día tras día.",
+                "Cree en ti mismo y todo lo que eres. Sé consciente de que hay algo dentro de ti que es más grande que cualquier obstáculo.",
+                "La disciplina es el puente entre las metas y los logros.",
+                "No te detengas hasta que te sientas orgulloso.",
+                "El aprendizaje nunca agota la mente.",
+                "El único lugar donde el éxito viene antes que el trabajo es en el diccionario.",
+                "La motivación te pone en marcha, el hábito te mantiene.",
+                "Estudia mientras otros duermen; trabaja mientras otros holgazanean; prepárate mientras otros juegan; y sueña mientras otros desean."
+            ];
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            motivationalQuoteEl.textContent = `"${quotes[randomIndex]}"`;
+         };
+
+        // Mapeo de colores para la leyenda y progreso
+        const colorMapping = {
+            Resumen: { color: '#14b8a6' }, // teal-500
+            Estudio: { color: '#3b82f6' }, // UPDATED: blue-500
+            Practica: { color: '#f59e0b' }, // amber-500
+            Actividad: { color: '#f43f5e' }, // rose-500
+            Clase: { color: '#8b5cf6' },    // violet-500
+            Examen: { color: '#ef4444' },   // red-500
+            Personal: { color: '#6b7280' }, // gray-500
+            Descanso: { color: '#60a5fa' }  // blue-400 (Slightly lighter for distinction)
+        };
+
+        const renderColorLegend = () => {
+            colorLegendEl.innerHTML = '';
+            for (const type in colorMapping) {
+                const item = document.createElement('div');
+                item.className = 'legend-item flex items-center mb-1';
+                item.innerHTML = `
+                    <span style="background-color: ${colorMapping[type].color}; border-color: ${colorMapping[type].color}"></span>
+                    <span class="text-gray-700">${type}</span>
+                `;
+                colorLegendEl.appendChild(item);
+            }
+         };
+
+
+        // Event Listeners
+        prevDayBtn.onclick = () => changeDate(-1);
+        nextDayBtn.onclick = () => changeDate(1);
+        todayBtn.onclick = () => {
+            let now = new Date();
+            currentDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+            renderDailyTasks(currentDate);
+        };
+        currentDateInput.onchange = () => {
+            const [year, month, day] = currentDateInput.value.split('-').map(Number);
+            currentDate = new Date(Date.UTC(year, month - 1, day));
+            renderDailyTasks(currentDate);
+        };
+
+        // Inicialización
+        window.addEventListener('load', () => {
+            let now = new Date();
+            currentDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+            renderDailyTasks(currentDate);
+            getRandomQuote();
+            renderColorLegend();
+            updateTimerDisplay();
+            renderProgressTracking();
+        });
+
+        // Permitir sonido después de la primera interacción
+        document.body.addEventListener('click', () => {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            } else if (!audioContext) {
+                 try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+            }
+        }, { once: true });
+
+    </script>
+
+</body>
+</html>
