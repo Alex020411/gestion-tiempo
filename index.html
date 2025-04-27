@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Planificador Académico Definitivo v7</title>
+    <title>Mi Planificador Académico Definitivo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,7 +42,7 @@
 
         /* Colores Tareas */
         .task-color-Resumen { border-color: #14b8a6; } /* teal-500 */
-        .task-color-Estudio { border-color: #3b82f6; } /* *** UPDATED: blue-500 *** */
+        .task-color-Estudio { border-color: #3b82f6; } /* blue-500 */
         .task-color-Practica { border-color: #f59e0b; } /* amber-500 */
         .task-color-Actividad { border-color: #f43f5e; } /* rose-500 */
         .task-color-Clase { border-color: #8b5cf6; } /* violet-500 */
@@ -57,7 +57,7 @@
         .progress-bar-fill { height: 100%; border-radius: 0.375rem; transition: width 0.5s ease; text-align: right; padding-right: 0.5rem; color: white; font-size: 0.65rem; line-height: 1rem;}
 
         /* Colores Barra Progreso */
-        .progress-07GIAR { background-color: #3b82f6; } /* *** UPDATED: blue-500 *** */
+        .progress-07GIAR { background-color: #3b82f6; } /* blue-500 */
         .progress-08GIAR { background-color: #8b5cf6; } /* violet-500 */
         .progress-09GIAR { background-color: #f43f5e; } /* rose-500 */
         .progress-10GIAR { background-color: #14b8a6; } /* teal-500 */
@@ -163,56 +163,77 @@
     <script>
         // --- DATOS DEL PLAN ESTRATÉGICO (Revisado para cumplir horas v6) ---
         const studyPlan = [
-            // Fase 1: 28.04 - 05.05
+            // Fase 1: 28.04 - 05.05 (Horario ajustado para descanso 15:00-16:00)
             { date: '2025-04-28', startTime: '09:00', endTime: '10:50', taskType: 'Resumen', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Tema 4', technique: 'Pomodoro, Feynman' }, // 2h R
             { date: '2025-04-28', startTime: '11:00', endTime: '12:50', taskType: 'Resumen', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Tema 1', technique: 'Pomodoro, Feynman' }, // 2h R
-            { date: '2025-04-28', startTime: '14:00', endTime: '15:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica Inicial', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
-            { date: '2025-04-28', startTime: '16:00', endTime: '16:50', taskType: 'Resumen', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Tema 1 Inicio', technique: 'Pomodoro, Feynman' }, // 1h R
-            { date: '2025-04-28', startTime: '17:30', endTime: '18:20', taskType: 'Personal', subjectCode: 'PLAN', subjectName: 'Organización Semanal', details: '', technique: '' },
+            { date: '2025-04-28', startTime: '14:00', endTime: '14:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica Inicial', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
+            // 15:00 - 16:00 DESCANSO COMIDA PRINCIPAL
+            { date: '2025-04-28', startTime: '16:00', endTime: '16:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica Inicial', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
+            { date: '2025-04-28', startTime: '17:00', endTime: '17:50', taskType: 'Resumen', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Tema 1 Inicio', technique: 'Pomodoro, Feynman' }, // 1h R
+            { date: '2025-04-28', startTime: '18:00', endTime: '18:50', taskType: 'Personal', subjectCode: 'PLAN', subjectName: 'Organización Semanal', details: '', technique: '' }, // 1h
             { date: '2025-04-28', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
             { date: '2025-04-28', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 8h
+
             { date: '2025-04-29', startTime: '09:00', endTime: '11:50', taskType: 'Resumen', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Tema 2', technique: 'Pomodoro, Feynman' }, // 3h R
             { date: '2025-04-29', startTime: '12:00', endTime: '12:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
-            { date: '2025-04-29', startTime: '14:00', endTime: '16:50', taskType: 'Resumen', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Tema 1 Fin + Tema 2 Inicio', technique: 'Pomodoro, Feynman' }, // 3h R
-            { date: '2025-04-29', startTime: '17:30', endTime: '19:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-04-29', startTime: '14:00', endTime: '14:50', taskType: 'Resumen', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Tema 1 Fin', technique: 'Pomodoro, Feynman' }, // 1h R
+            // 15:00 - 16:00 DESCANSO COMIDA PRINCIPAL
+            { date: '2025-04-29', startTime: '16:00', endTime: '17:50', taskType: 'Resumen', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Tema 2 Inicio', technique: 'Pomodoro, Feynman' }, // 2h R
+            { date: '2025-04-29', startTime: '18:00', endTime: '19:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
             { date: '2025-04-29', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 9h
+
             { date: '2025-04-30', startTime: '09:00', endTime: '10:50', taskType: 'Resumen', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Tema 3', technique: 'Pomodoro, Feynman' }, // 2h R (Total 08GIAR R: 5h OK)
             { date: '2025-04-30', startTime: '11:00', endTime: '12:50', taskType: 'Resumen', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Todos (Inicio)', technique: 'Pomodoro, Feynman' }, // 2h R
             { date: '2025-04-30', startTime: '14:00', endTime: '14:50', taskType: 'Resumen', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Tema 2 Fin', technique: 'Pomodoro, Feynman' }, // 1h R (Total 09GIAR R: 3h OK)
-            { date: '2025-04-30', startTime: '15:00', endTime: '16:50', taskType: 'Resumen', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Todos (Continuación)', technique: 'Pomodoro, Feynman' }, // 2h R
-            { date: '2025-04-30', startTime: '17:30', endTime: '18:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
+            // 15:00 - 16:00 DESCANSO COMIDA PRINCIPAL
+            { date: '2025-04-30', startTime: '16:00', endTime: '17:50', taskType: 'Resumen', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Todos (Continuación)', technique: 'Pomodoro, Feynman' }, // 2h R
+            { date: '2025-04-30', startTime: '18:00', endTime: '18:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
             { date: '2025-04-30', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
             { date: '2025-04-30', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 8h
+
             { date: '2025-05-01', startTime: '09:00', endTime: '11:50', taskType: 'Resumen', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Todos (Continuación)', technique: 'Pomodoro, Feynman' }, // 3h R
             { date: '2025-05-01', startTime: '12:00', endTime: '12:50', taskType: 'Estudio', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Repaso Activo Tema 4', technique: 'Active Recall' }, // 1h E
-            { date: '2025-05-01', startTime: '14:00', endTime: '16:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 3h P
-            { date: '2025-05-01', startTime: '17:30', endTime: '18:20', taskType: 'Estudio', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Repaso Activo Temas 1-3', technique: 'Active Recall' }, // 1h E
+            { date: '2025-05-01', startTime: '14:00', endTime: '14:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
+            // 15:00 - 16:00 DESCANSO COMIDA PRINCIPAL
+            { date: '2025-05-01', startTime: '16:00', endTime: '17:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-05-01', startTime: '18:00', endTime: '18:50', taskType: 'Estudio', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Repaso Activo Temas 1-3', technique: 'Active Recall' }, // 1h E
             { date: '2025-05-01', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 8h
+
             { date: '2025-05-02', startTime: '09:00', endTime: '11:50', taskType: 'Resumen', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Todos (Finalización)', technique: 'Pomodoro, Feynman' }, // 3h R (Total 10GIAR R: 10h OK)
             { date: '2025-05-02', startTime: '12:00', endTime: '12:50', taskType: 'Estudio', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Repaso Activo Temas 1-2', technique: 'Active Recall' }, // 1h E
-            { date: '2025-05-02', startTime: '14:00', endTime: '15:50', taskType: 'Estudio', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 2h E
+            { date: '2025-05-02', startTime: '14:00', endTime: '14:50', taskType: 'Estudio', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 1h E
+            // 15:00 - 16:00 DESCANSO COMIDA PRINCIPAL
             { date: '2025-05-02', startTime: '16:00', endTime: '17:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-05-02', startTime: '18:00', endTime: '18:50', taskType: 'Estudio', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 1h E
             { date: '2025-05-02', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
             { date: '2025-05-02', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 8h
+
             { date: '2025-05-03', startTime: '09:00', endTime: '10:50', taskType: 'Clase', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Clase Pendiente 2', technique: 'Toma de apuntes activa' }, // 2h C
             { date: '2025-05-03', startTime: '11:00', endTime: '12:50', taskType: 'Clase', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Clase Pendiente 1', technique: 'Toma de apuntes activa' }, // 2h C
-            { date: '2025-05-03', startTime: '14:00', endTime: '16:50', taskType: 'Estudio', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 3h E
-            { date: '2025-05-03', startTime: '17:30', endTime: '19:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-05-03', startTime: '14:00', endTime: '14:50', taskType: 'Estudio', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 1h E
+            // 15:00 - 16:00 DESCANSO COMIDA PRINCIPAL
+            { date: '2025-05-03', startTime: '16:00', endTime: '17:50', taskType: 'Estudio', subjectCode: '08GIAR', subjectName: 'Algoritmos y estructuras de datos', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 2h E
+            { date: '2025-05-03', startTime: '18:00', endTime: '19:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
             { date: '2025-05-03', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 9h
+
             { date: '2025-05-04', startTime: '09:00', endTime: '11:50', taskType: 'Actividad', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Actividad 3', technique: 'Pomodoro' }, // 3h A
             { date: '2025-05-04', startTime: '12:00', endTime: '13:30', taskType: 'Clase', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Clase Pendiente 3', technique: 'Toma de apuntes activa' }, // 1.5h C
             { date: '2025-05-04', startTime: '14:30', endTime: '16:00', taskType: 'Clase', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Clase Pendiente 2', technique: 'Toma de apuntes activa' }, // 1.5h C
             { date: '2025-05-04', startTime: '16:15', endTime: '18:15', taskType: 'Estudio', subjectCode: '09GIAR', subjectName: 'Introducción IA', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 2h E
             { date: '2025-05-04', startTime: '18:30', endTime: '19:20', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Práctica', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
             { date: '2025-05-04', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 9h
+
             { date: '2025-05-05', startTime: '09:00', endTime: '11:50', taskType: 'Estudio', subjectCode: '10GIAR', subjectName: 'Arquitectura de computadores', details: 'Estudio Base', technique: 'Pomodoro, Active Recall' }, // 3h E
             { date: '2025-05-05', startTime: '12:00', endTime: '12:50', taskType: 'Estudio', subjectCode: 'GIAR', subjectName: 'Repaso General Resúmenes', details: 'Todos', technique: 'Active Recall' }, // 1h E
-            { date: '2025-05-05', startTime: '14:00', endTime: '16:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Enfoque áreas débiles', technique: 'Pomodoro, Práctica Deliberada' }, // 3h P
-            { date: '2025-05-05', startTime: '17:30', endTime: '18:20', taskType: 'Personal', subjectCode: 'PLAN', subjectName: 'Preparar Descanso', details: 'Organizar post-descanso', technique: '' }, // 1h
+            { date: '2025-05-05', startTime: '14:00', endTime: '14:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Enfoque áreas débiles', technique: 'Pomodoro, Práctica Deliberada' }, // 1h P
+            // 15:00 - 16:00 DESCANSO COMIDA PRINCIPAL
+            { date: '2025-05-05', startTime: '16:00', endTime: '17:50', taskType: 'Practica', subjectCode: '01GIAR', subjectName: 'Cálculo (Recuperación)', details: 'Enfoque áreas débiles', technique: 'Pomodoro, Práctica Deliberada' }, // 2h P
+            { date: '2025-05-05', startTime: '18:00', endTime: '18:50', taskType: 'Personal', subjectCode: 'PLAN', subjectName: 'Preparar Descanso', details: 'Organizar post-descanso', technique: '' }, // 1h
             { date: '2025-05-05', startTime: '19:30', endTime: '21:30', taskType: 'Personal', subjectCode: 'GIMNASIO', subjectName: 'Gimnasio', details: '', technique: '' },
             { date: '2025-05-05', startTime: '21:30', endTime: '23:30', taskType: 'Personal', subjectCode: 'FAMILIA', subjectName: 'Tiempo Familiar', details: 'Calidad', technique: '' }, // Total 8h
 
-            // Fase 2: 06.05 - 10.05 - DESCANSO
+            // ... (Resto de Fases 2, 3 y 4 como en la versión anterior, respetando la comida 15:30-16:30 en Fase 4) ...
+             // Fase 2: 06.05 - 10.05 - DESCANSO
 
             // Fase 3: 11.05 (4 clases restantes)
             { date: '2025-05-11', startTime: '09:30', endTime: '11:00', taskType: 'Clase', subjectCode: '07GIAR', subjectName: 'Introducción ciencia de datos', details: 'Clase Pendiente 1', technique: 'Toma de apuntes activa' }, // 1.5h C
@@ -341,7 +362,7 @@
             let proceed = true;
 
             if (completedTasks[taskId] && taskToToggle) {
-                proceed = confirm(`¿Seguro que quieres desmarcar la tarea "${taskToToggle.subjectName} (${taskToToggle.taskType})"? Perderás el progreso registrado.`);
+                proceed = confirmDeletion(`¿Desmarcar la tarea "${taskToToggle.subjectName} (${taskToToggle.taskType})"? Perderás el progreso.`);
             }
 
             if (proceed) {
@@ -351,7 +372,7 @@
                 renderProgressTracking();
             } else {
                  const checkbox = document.querySelector(`.task-card[data-task-id="${taskId}"] input[type="checkbox"]`);
-                 if (checkbox) checkbox.checked = true;
+                 if (checkbox) checkbox.checked = true; // Revertir visualmente
             }
         };
 
@@ -506,10 +527,10 @@
             const studyTaskTypesCalc = ['Practica']; // Solo práctica para Cálculo
             // CORRECCIÓN: Nuevos objetivos de horas
             const relevantSubjects = {
-                '07GIAR': { name: 'Introducción ciencia de datos', targetHours: 25, totalActivities: 1 }, // 22h E/P/R + 3h C
-                '08GIAR': { name: 'Algoritmos y estructuras de datos', targetHours: 26.5, totalActivities: 0 }, // 25h E/P/R + 1.5h C
-                '09GIAR': { name: 'Introducción IA', targetHours: 29.5, totalActivities: 1 }, // 25h E/P/R + 4.5h C
-                '10GIAR': { name: 'Arquitectura de computadores', targetHours: 31.5, totalActivities: 1 }, // 28.5h E/P/R + 3h C (Asumiendo 1 actividad futura)
+                '07GIAR': { name: 'Introducción ciencia de datos', targetHours: 25, totalActivities: 1 },
+                '08GIAR': { name: 'Algoritmos y estructuras de datos', targetHours: 26.5, totalActivities: 0 },
+                '09GIAR': { name: 'Introducción IA', targetHours: 29.5, totalActivities: 1 },
+                '10GIAR': { name: 'Arquitectura de computadores', targetHours: 31.5, totalActivities: 1 },
                 '01GIAR': { name: 'Cálculo (Recuperación)', targetHours: 30, totalActivities: 0 }
             };
 
@@ -533,9 +554,9 @@
                         const duration = calculateTaskDuration(task.startTime, task.endTime);
                         progress[task.subjectCode].completedHours += duration;
                     }
-                    // Contar actividades completadas
-                    if (task.taskType === 'Actividad' && completedTasks[task.id]) {
-                        progress[task.subjectCode].completedActivities += 1;
+                    // Contar actividades completadas (si aplica)
+                    if (task.taskType === 'Actividad' && completedTasks[task.id] && progress[task.subjectCode].totalActivities > 0) {
+                         progress[task.subjectCode].completedActivities += 1;
                     }
                 }
             });
@@ -553,10 +574,9 @@
                 const progressPercent = subjectProgress.targetHours > 0 ? (displayCompletedHours / subjectProgress.targetHours) * 100 : 0;
 
                 const card = document.createElement('div');
-                // Usar un color fijo o basado en el código para el borde superior
-                const taskTypeForColor = subjectCode === '01GIAR' ? 'Practica' : 'Estudio'; // Tipo base para color
+                const taskTypeForColor = subjectCode === '01GIAR' ? 'Practica' : 'Estudio';
                 const colorInfo = colorMapping[taskTypeForColor];
-                const borderColor = colorInfo ? colorInfo.color : '#6b7280'; // Default gris
+                const borderColor = colorInfo ? colorInfo.color : '#6b7280';
 
                 card.className = `bg-white p-4 rounded-lg shadow-md border-t-4`;
                 card.style.borderTopColor = borderColor;
@@ -671,3 +691,4 @@
 
 </body>
 </html>
+
